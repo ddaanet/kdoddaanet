@@ -104,3 +104,39 @@ class TestRegister(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Passwords don&#x27;t match.")
         self.assertEqual(User.objects.count(), 0)
+
+
+class TestUserEdit(TestCase):
+    """Tests for the edit view."""
+
+    def test_edit_page(self):
+        """The edit page is accessible."""
+        user = User.objects.create_user(username="testuser")
+        self.client.force_login(user)
+        response = self.client.get(reverse("edit"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "account/edit.html")
+
+    def test_edit_user(self):
+        """Users can edit their profile."""
+        user = User.objects.create_user(username="testuser")
+        self.client.force_login(user)
+        response = self.client.post(
+            reverse("edit"),
+            {
+                "username": "newtestuser",
+                "first_name": "New Test",
+                "last_name": "New User",
+                "email": "newtest@example.com"
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/account/")
+        user.refresh_from_db()
+        self.assertEqual(user.username, "newtestuser")
+        self.assertEqual(user.first_name, "New Test")
+        self.assertEqual(user.last_name, "New User")
+        self.assertEqual(user.email, "newtest@example.com")
+        self.assertTrue(user.is_active)
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
