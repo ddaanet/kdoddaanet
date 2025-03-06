@@ -45,3 +45,62 @@ class TestDashboard(TestCase):
         response = self.client.get(reverse("dashboard"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "account/dashboard.html")
+
+
+class TestRegister(TestCase):
+    """Tests for the register view."""
+
+    def test_register_page(self):
+        """The register page is accessible."""
+        response = self.client.get(reverse("register"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "account/register.html")
+
+    def test_register_user(self):
+        """Users can register successfully."""
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "testuser",
+                "password": "testpassword",
+                "password2": "testpassword",
+                "first_name": "Test",
+                "last_name": "User",
+                "email": "test@example.com",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/account/register_done/")
+        self.assertEqual(User.objects.count(), 1)
+        user = User.objects.first()
+        self.assertEqual(user.username, "testuser")
+        self.assertTrue(user.check_password("testpassword"))
+        self.assertEqual(user.first_name, "Test")
+        self.assertEqual(user.last_name, "User")
+        self.assertEqual(user.email, "test@example.com")
+        self.assertTrue(user.is_active)
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
+    def test_register_done_page(self):
+        """The register done page is accessible."""
+        response = self.client.get(reverse("register_done"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "account/register_done.html")
+
+    def test_register_password_mismatch(self):
+        """On the register page, passwords must match."""
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "testuser",
+                "password": "testpassword",
+                "password2": "wrongpassword",
+                "first_name": "Test",
+                "last_name": "User",
+                "email": "test@example.com",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Passwords don&#x27;t match.")
+        self.assertEqual(User.objects.count(), 0)
