@@ -68,6 +68,7 @@ def edit(request):
         user_form = UserEditForm(instance=request.user, data=request.POST)
         if user_form.is_valid():
             user_form.save()
+            return redirect("dashboard")
     else:
         user_form = UserEditForm(instance=request.user)
     return render(
@@ -77,3 +78,7 @@ def edit(request):
             "user_form": user_form,
         },
     )
+
+def logout_done(request):
+    """Logout complete."""
+    return render(request, "registration/logged_out.html")

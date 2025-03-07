@@ -8,4 +8,5 @@ urlpatterns = [
     path('edit/', views.edit, name='edit'),
     path('', include('django.contrib.auth.urls')),
     path('', views.dashboard, name='dashboard'),
+    path('logout_done/', views.logout_done, name='logout_done'),
  ]

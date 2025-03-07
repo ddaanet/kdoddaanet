@@ -29,6 +29,24 @@ class TestLogin(TestCase):
         self.assertTrue(response.wsgi_request.user.is_authenticated)
 
 
+class TestLogout(TestCase):
+    """Tests for the logout view."""
+
+    def test_logout(self):
+        """Users can log out successfully."""
+        user = User.objects.create_user(username="testuser")
+        self.client.force_login(user)
+        response = self.client.post(reverse("logout"))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/account/logout_done")
+
+    def test_logout_done_page(self):
+        """The logout done page is accessible."""
+        response = self.client.get(reverse("logout_done"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/logged_out.html")
+
+
 class TestDashboard(TestCase):
     """Tests for the dashboard view."""
 
